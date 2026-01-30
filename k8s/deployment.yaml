@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gitops-app
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: gitops
+  template:
+    metadata:
+      labels:
+        app: gitops
+    spec:
+      containers:
+      - name: app
+        image: <ECR_URL>:latest
+        ports:
+        - containerPort: 8080
+
