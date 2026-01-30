@@ -2,8 +2,11 @@ name: Terraform Infra
 
 on:
   push:
+    branches:
+      - main
     paths:
       - terraform/**
+  workflow_dispatch:
 
 jobs:
   terraform:
