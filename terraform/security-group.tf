@@ -1,26 +1,32 @@
-resource "aws_security_group" "devops_sg" {
-  name        = "devops-sg"
-  description = "Security group for DevOps control VM"
-  vpc_id      = aws_vpc.main.id
+resource "aws_security_group" "gitops_sg" {
+  name   = "gitops-sg"
+  vpc_id = aws_vpc.main.id
 
   ingress {
-    description = "SSH access"
+    description = "SSH"
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["YOUR_IP/32"]
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
   ingress {
-    description = "Argo CD / App access"
+    description = "ArgoCD UI / App access"
     from_port   = 8081
     to_port     = 8081
     protocol    = "tcp"
-    cidr_blocks = ["YOUR_IP/32"]
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    description = "Kubernetes NodePorts"
+    from_port   = 30000
+    to_port     = 32767
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
   egress {
-    description = "Outbound internet"
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
@@ -28,7 +34,6 @@ resource "aws_security_group" "devops_sg" {
   }
 
   tags = {
-    Name = "devops-sg"
+    Name = "gitops-sg"
   }
 }
-
