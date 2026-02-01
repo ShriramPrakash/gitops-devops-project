@@ -63,6 +63,11 @@ resource "aws_instance" "gitops_ec2" {
         -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 
       # -----------------------------
+      # APPLY ARGO CD APPLICATION (GitOps bootstrap)
+      # -----------------------------
+      kubectl apply -f https://raw.githubusercontent.com/ShriramPrakash/gitops-devops-project/main/argo/application.yaml
+
+      # -----------------------------
       # WAIT for Argo CD to be ready
       # -----------------------------
       kubectl wait deployment argocd-server \
