@@ -1,0 +1,10 @@
+replicaCount: 2
+
+image:
+  repository: 171385165310.dkr.ecr.ap-south-1.amazonaws.com/gitops-app
+  tag: latest
+
+service:
+  type: NodePort
+  port: 80
+
