@@ -61,6 +61,32 @@ resource "aws_instance" "gitops_ec2" {
       kubectl create namespace argocd || true
       kubectl apply -n argocd \
         -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+
+      # -----------------------------
+      # WAIT for Argo CD to be ready
+      # -----------------------------
+      kubectl wait deployment argocd-server \
+        -n argocd --for=condition=Available=True --timeout=300s
+
+      # -----------------------------
+      # Expose Argo CD UI (NodePort)
+      # -----------------------------
+      cat << 'EOF2' | kubectl apply -f -
+      apiVersion: v1
+      kind: Service
+      metadata:
+        name: argocd-server-nodeport
+        namespace: argocd
+      spec:
+        type: NodePort
+        selector:
+          app.kubernetes.io/name: argocd-server
+        ports:
+          - port: 443
+            targetPort: 8080
+            nodePort: 30081
+      EOF2
+
     EOS
   EOF
 
