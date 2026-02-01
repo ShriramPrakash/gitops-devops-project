@@ -30,7 +30,12 @@ jobs:
       run: terraform init
       working-directory: terraform
 
+    - name: Import ECR if already exists
+      run: terraform import aws_ecr_repository.app_repo gitops-app || true
+      working-directory: terraform
+
     - name: Terraform Apply
       run: terraform apply -auto-approve
       working-directory: terraform
+
 
