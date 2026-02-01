@@ -5,34 +5,48 @@ on:
     branches:
       - main
     paths:
-      - terraform/**
+      - app/**
+      - Dockerfile
   workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
-    steps:
-    - uses: actions/checkout@v4
+    env:
+      AWS_REGION: ap-south-1
+      ECR_REPO: gitops-app
 
-    - uses: aws-actions/configure-aws-credentials@v4
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: ap-south-1
 
-
     - name: Login to Amazon ECR
       run: |
-        aws ecr get-login-password --region ap-south-1 | \
+        aws ecr get-login-password --region $AWS_REGION | \
         docker login \
-        --username AWS \
-        --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.ap-south-1.amazonaws.com
+          --username AWS \
+          --password-stdin \
+          ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.$AWS_REGION.amazonaws.com
 
-
-    - name: Build and Push
+    - name: Build Docker image
       run: |
-        docker build -t gitops-app app
-        docker tag gitops-app:latest <ECR_URL>:latest
-        docker push <ECR_URL>:latest
+        docker build -t $ECR_REPO app
+
+    - name: Tag Docker image
+      run: |
+        docker tag $ECR_REPO:latest \
+        ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPO:latest
+
+    - name: Push Docker image to ECR
+      run: |
+        docker push \
+        ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPO:latest
 
