@@ -7,7 +7,7 @@ spec:
   project: default
 
   source:
-    repoURL: https://github.com/ShriramPrakash/gitops-devops-project
+    repoURL: https://github.com/ShriramPrakash/gitops-devops-project.git
     targetRevision: main
     path: helm/gitops-app
     helm:
@@ -24,4 +24,3 @@ spec:
       selfHeal: true
     syncOptions:
       - CreateNamespace=true
-
