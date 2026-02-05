@@ -35,11 +35,14 @@ jobs:
       - name: Terraform Init
         run: terraform init -input=false
 
+      # ✅ ADD THIS
+      - name: Import IAM roles (idempotent)
+        run: |
+          terraform import -input=false aws_iam_role.eks_cluster_role eks-cluster-role || true
+          terraform import -input=false aws_iam_role.eks_node_role eks-node-role || true
+
       - name: Import ECR if already exists
         run: terraform import -input=false -var-file="terraform.tfvars" aws_ecr_repository.app_repo gitops-app || true
 
       - name: Terraform Apply
         run: terraform apply -input=false -auto-approve -var-file="terraform.tfvars"
-
-
-
