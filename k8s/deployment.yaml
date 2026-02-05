@@ -2,19 +2,19 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: gitops-app
+  namespace: default
 spec:
   replicas: 3
   selector:
     matchLabels:
-      app: gitops
+      app: gitops-app
   template:
     metadata:
       labels:
-        app: gitops
+        app: gitops-app
     spec:
       containers:
-      - name: app
-        image: <ECR_URL>:latest
-        ports:
-        - containerPort: 8080
-
+        - name: gitops-app
+          image: 171385165310.dkr.ecr.ap-south-1.amazonaws.com/gitops-app:latest
+          ports:
+            - containerPort: 8080
