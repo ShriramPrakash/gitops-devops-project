@@ -35,7 +35,6 @@ jobs:
       - name: Terraform Init
         run: terraform init -input=false
 
-      # ✅ ADD THIS
       - name: Import IAM roles (idempotent)
         run: |
           terraform import -input=false aws_iam_role.eks_cluster_role eks-cluster-role || true
@@ -44,5 +43,43 @@ jobs:
       - name: Import ECR if already exists
         run: terraform import -input=false -var-file="terraform.tfvars" aws_ecr_repository.app_repo gitops-app || true
 
-      - name: Terraform Apply
+      - name: Terraform Apply (Infra only)
         run: terraform apply -input=false -auto-approve -var-file="terraform.tfvars"
+
+  argocd:
+    needs: terraform
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-south-1
+
+      - name: Install kubectl
+        uses: azure/setup-kubectl@v4
+
+      - name: Install Helm
+        uses: azure/setup-helm@v4
+
+      - name: Update kubeconfig
+        run: |
+          aws eks update-kubeconfig --region ap-south-1 --name gitops-eks
+          kubectl get nodes
+
+      - name: Install Argo CD
+        run: |
+          helm repo add argo https://argoproj.github.io/argo-helm
+          helm repo update
+          helm upgrade --install argocd argo/argo-cd \
+            --namespace argocd --create-namespace
+
+      - name: Verify Argo CD
+        run: |
+          kubectl get pods -n argocd
+          kubectl get svc -n argocd
