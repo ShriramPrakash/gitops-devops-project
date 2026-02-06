@@ -9,6 +9,6 @@ imagePullSecrets:
   - name: ecr-secret
 
 service:
-  type: NodePort
+  type: ClusterIP
   port: 80
 
