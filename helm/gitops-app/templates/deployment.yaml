@@ -18,6 +18,5 @@ spec:
         - name: gitops-app
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           ports:
-            - containerPort: 80
-
-
+            - name: http
+              containerPort: 8080
