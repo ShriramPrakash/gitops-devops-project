@@ -17,4 +17,6 @@ spec:
         - name: gitops-app
           image: 171385165310.dkr.ecr.ap-south-1.amazonaws.com/gitops-app:latest
           ports:
-            - containerPort: 8080
+            - name: http
+              containerPort: 8080
+
