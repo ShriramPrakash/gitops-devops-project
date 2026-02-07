@@ -6,9 +6,8 @@ metadata:
 spec:
   type: ClusterIP
   selector:
-    app: gitops-app
+    app: gitops
   ports:
-    - port: 80
+    - name: http
+      port: 80
       targetPort: 8080
-
-
