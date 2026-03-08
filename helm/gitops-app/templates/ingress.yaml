@@ -17,7 +17,7 @@ spec:
             pathType: {{ .Values.ingress.pathType }}
             backend:
               service:
-                name: gitops-service
+                name: {{ .Values.service.name }}
                 port:
                   number: {{ .Values.service.port }}
 {{- end }}
