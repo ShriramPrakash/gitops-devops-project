@@ -2,6 +2,9 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: gitops-app
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: gitops-app
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
@@ -17,6 +20,8 @@ spec:
       containers:
         - name: gitops-app
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - name: http
-              containerPort: 8080
+              containerPort: {{ .Values.container.port }}
+              protocol: TCP
