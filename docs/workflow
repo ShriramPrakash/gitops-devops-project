@@ -21,6 +21,15 @@ Terraform provisions AWS infrastructure
   +--> EKS cluster
   +--> EKS node group
   +--> ECR repository
+
+ second job
++--> Install kubectl
++--> Install Helm
++--> Connect to the EKS cluster
++--> Create argocd namespace
++--> Install Argo CD using Helm
++--> Create Argo CD components (pods/services)
++--> Verify Argo CD installation
   |
   v
 Confirm infra pipeline completed successfully
@@ -30,8 +39,6 @@ Run bootstrap commands manually from docs/bootstrap.md
   |
   +--> aws eks update-kubeconfig
   +--> kubectl get nodes
-  +--> Install Argo CD
-  +--> Access Argo CD UI
   +--> Associate IAM OIDC provider
   +--> Create IAM policy for ALB controller
   +--> Create IAM service account
