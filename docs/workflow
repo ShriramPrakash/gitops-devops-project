@@ -1,0 +1,173 @@
+Initial
+
+START
+  |
+  v
+Push Terraform / infra code to GitHub
+  |
+  v
+Run infra.yaml
+  |
+  v
+Terraform provisions AWS infrastructure
+  |
+  +--> VPC
+  +--> Public subnets
+  +--> Private subnets
+  +--> Internet Gateway
+  +--> NAT Gateway
+  +--> Route tables
+  +--> IAM roles
+  +--> EKS cluster
+  +--> EKS node group
+  +--> ECR repository
+  |
+  v
+Confirm infra pipeline completed successfully
+  |
+  v
+Run bootstrap commands manually from docs/bootstrap.md
+  |
+  +--> aws eks update-kubeconfig
+  +--> kubectl get nodes
+  +--> Install Argo CD
+  +--> Access Argo CD UI
+  +--> Associate IAM OIDC provider
+  +--> Create IAM policy for ALB controller
+  +--> Create IAM service account
+  +--> Install AWS Load Balancer Controller
+  +--> kubectl apply -f argo/application.yaml
+  |
+  v
+Argo CD registers the application
+  |
+  v
+Argo CD reads helm/gitops-app
+  |
+  v
+Helm renders Kubernetes manifests
+  |
+  +--> Deployment
+  +--> Service
+  +--> Ingress
+  |
+  v
+Kubernetes creates resources in EKS
+  |
+  v
+AWS Load Balancer Controller creates ALB
+  |
+  v
+Get application DNS
+  |
+  +--> kubectl get ingress -n default
+  |
+  v
+Access application in browser
+  |
+  +--> http://<ALB-DNS-NAME>
+  |
+  v
+END
+After this run bootstrap commands
+
+If Developer changes code
+
+app/app.py
+
+app/Dockerfile
+
+START
+  |
+  v
+Developer changes app code
+  |
+  v
+Push to GitHub main branch
+  |
+  v
+ci.yaml runs
+  |
+  +--> Checkout code
+  +--> Configure AWS credentials
+  +--> Login to ECR
+  +--> Generate image tag from Git commit SHA
+  +--> Build Docker image
+  +--> Push image to ECR
+  +--> Update helm/gitops-app/values.yaml with new SHA tag
+  +--> Commit updated values.yaml back to GitHub
+  |
+  v
+Git repository now has new image tag in Helm values
+  |
+  v
+Argo CD detects Git change
+  |
+  v
+Argo CD syncs helm/gitops-app
+  |
+  v
+Helm renders updated Deployment
+  |
+  v
+Kubernetes performs rolling update
+  |
+  v
+New pods start with new image tag
+  |
+  v
+Application updated successfully
+  |
+  v
+END
+
+Helm chart or argo config change
+
+helm/gitops-app/templates/deployment.yaml
+
+helm/gitops-app/templates/service.yaml
+
+helm/gitops-app/templates/ingress.yaml
+
+helm/gitops-app/values.yaml
+
+argo/application.yaml
+
+START
+  |
+  v
+Developer changes Helm chart or Argo CD config
+  |
+  v
+Push to GitHub main branch
+  |
+  v
+deploy.yaml runs
+  |
+  +--> Checkout code
+  +--> Configure AWS credentials
+  +--> Install kubectl
+  +--> Update kubeconfig
+  +--> kubectl apply -f argo/application.yaml
+  |
+  v
+Argo CD application definition is updated
+  |
+  v
+Argo CD syncs helm/gitops-app
+  |
+  v
+Helm renders new manifests
+  |
+  v
+Kubernetes updates resources
+  |
+  +--> Deployment changes
+  +--> Service changes
+  +--> Ingress changes
+  |
+  v
+Cluster state matches Git state
+  |
+  v
+END
