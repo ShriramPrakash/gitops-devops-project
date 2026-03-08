@@ -43,3 +43,14 @@ kubectl apply -f argo/application.yaml
 kubectl get applications -n argocd
 
 kubectl get ingress -n default
+
+#### At last step ####
+
+kubectl get ingress gitops-app-ingress
+
+ADDRESS   <ALB-DNS-NAME>
+
+http://<ALB-DNS-NAME>
+
+Hello from GitOps + Terraform!!
+
