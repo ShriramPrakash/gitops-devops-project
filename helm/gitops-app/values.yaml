@@ -8,14 +8,14 @@ image:
 imagePullSecrets:
   - name: ecr-secret
 
+container:
+  port: 8080
+
 service:
   name: gitops-service
   type: ClusterIP
   port: 80
   targetPort: 8080
-
-container:
-  port: 8080
 
 ingress:
   enabled: true
