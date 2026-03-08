@@ -40,6 +40,9 @@ jobs:
         run: |
           kubectl apply -f argo/application.yaml
 
-      - name: Verify Argo CD Application
+      - name: Verify Application
         run: |
           kubectl get applications -n argocd
+          kubectl get pods -n default
+          kubectl get svc -n default
+          kubectl get ingress -n default
