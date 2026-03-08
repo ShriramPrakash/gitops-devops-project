@@ -37,12 +37,13 @@ Confirm infra pipeline completed successfully
   v
 Run bootstrap commands manually from docs/bootstrap.md
   |
-  +--> aws eks update-kubeconfig
-  +--> kubectl get nodes
+  +--> aws eks update-kubeconfig/Configure kubectl to connect to EKS
+  +--> kubectl get nodes/ Verify worker nodes
   +--> Associate IAM OIDC provider
   +--> Create IAM policy for ALB controller
   +--> Create IAM service account
   +--> Install AWS Load Balancer Controller
+  +--> Access Argo CD UI
   |
   v
 Run deploy.yaml (or kubectl apply -f argo/application.yaml)
