@@ -36,10 +36,27 @@ Run bootstrap commands manually from docs/bootstrap.md
   +--> Create IAM policy for ALB controller
   +--> Create IAM service account
   +--> Install AWS Load Balancer Controller
-  +--> kubectl apply -f argo/application.yaml
+  |
+  v
+Run deploy.yaml (or kubectl apply -f argo/application.yaml)
   |
   v
 Argo CD registers the application
+  |
+  v
+Push application code to GitHub
+  |
+  v
+ci.yaml runs
+  |
+  +--> Build Docker image
+  +--> Tag image with commit SHA
+  +--> Push image to ECR
+  +--> Update Helm values.yaml
+  +--> Commit new image tag
+  |
+  v
+Argo CD detects Git change
   |
   v
 Argo CD reads helm/gitops-app
@@ -69,7 +86,6 @@ Access application in browser
   |
   v
 END
-After this run bootstrap commands
 
 If Developer changes code
 
