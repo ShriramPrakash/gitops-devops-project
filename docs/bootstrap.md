@@ -103,3 +103,201 @@ Password:
 <img width="792" height="1049" alt="image" src="https://github.com/user-attachments/assets/07374e11-b5ab-4f4f-83e2-b79d0f0a2f6f" />
 
 
+Below are only the remaining commands you should run manually, with explanation and purpose.
+
+1️⃣ Access Argo CD UI (Port Forward)
+kubectl port-forward svc/argocd-server -n argocd 8081:443
+What it does
+
+Creates a temporary tunnel from your machine → Kubernetes service.
+
+Flow:
+
+Browser
+ |
+localhost:8081
+ |
+kubectl port-forward
+ |
+argocd-server service
+ |
+Argo CD UI
+
+Open browser:
+
+https://localhost:8081
+2️⃣ Get Argo CD Admin Password
+kubectl get secret argocd-initial-admin-secret \
+-n argocd \
+-o jsonpath="{.data.password}" | base64 --decode
+What it does
+
+Argo CD stores the default password inside a Kubernetes Secret.
+
+This command:
+
+Retrieves the secret
+
+Decodes the Base64 value
+
+Login credentials:
+
+Username: admin
+Password: <decoded password>
+3️⃣ Enable IAM OIDC Provider
+eksctl utils associate-iam-oidc-provider \
+--region ap-south-1 \
+--cluster gitops-eks \
+--approve
+Why needed
+
+This enables IRSA (IAM Roles for Service Accounts).
+
+This allows Kubernetes pods to assume IAM roles securely.
+
+Example:
+
+AWS Load Balancer Controller
+
+needs AWS permissions to create:
+
+ALB
+
+Target Groups
+
+Security Groups
+
+4️⃣ Download ALB Controller IAM Policy
+curl -o iam_policy.json \
+https://raw.githubusercontent.com/kubernetes-sigs/aws-load-balancer-controller/main/docs/install/iam_policy.json
+What it does
+
+Downloads the required IAM permissions for the controller.
+
+Permissions include:
+
+elasticloadbalancing:CreateLoadBalancer
+elasticloadbalancing:CreateTargetGroup
+ec2:AuthorizeSecurityGroupIngress
+5️⃣ Create IAM Policy in AWS
+aws iam create-policy \
+--policy-name AWSLoadBalancerControllerIAMPolicy \
+--policy-document file://iam_policy.json
+What it does
+
+Creates a custom IAM policy in AWS.
+
+This policy will later be attached to the Kubernetes controller.
+
+6️⃣ Create IAM Service Account
+eksctl create iamserviceaccount \
+  --cluster gitops-eks \
+  --namespace kube-system \
+  --name aws-load-balancer-controller \
+  --attach-policy-arn arn:aws:iam::<ACCOUNT_ID>:policy/AWSLoadBalancerControllerIAMPolicy \
+  --approve \
+  --region ap-south-1
+What it does
+
+Creates:
+
+Kubernetes ServiceAccount
++
+IAM Role
++
+Attached IAM Policy
+
+This enables the controller pod to call AWS APIs securely.
+
+7️⃣ Install AWS Load Balancer Controller
+
+Add Helm repo:
+
+helm repo add eks https://aws.github.io/eks-charts
+helm repo update
+
+Install controller:
+
+helm upgrade --install aws-load-balancer-controller \
+  eks/aws-load-balancer-controller \
+  -n kube-system \
+  --set clusterName=gitops-eks \
+  --set region=ap-south-1 \
+  --set vpcId=<YOUR_VPC_ID> \
+  --set serviceAccount.create=false \
+  --set serviceAccount.name=aws-load-balancer-controller
+What it does
+
+Installs the AWS Load Balancer Controller inside the cluster.
+
+Purpose:
+
+Automatically create Application Load Balancers (ALB) from Kubernetes Ingress.
+
+Flow:
+
+Ingress resource
+ |
+AWS Load Balancer Controller
+ |
+AWS API
+ |
+ALB created
+8️⃣ Verify Controller
+kubectl get pods -n kube-system | grep aws-load-balancer-controller
+
+Expected output:
+
+aws-load-balancer-controller Running
+9️⃣ Register Argo CD Application
+kubectl apply -f argo/application.yaml
+What it does
+
+Creates an Argo CD Application resource.
+
+This tells Argo CD:
+
+Watch this Git repository
+Deploy application manifests
+🔟 Verify Argo CD Application
+kubectl get applications -n argocd
+
+Expected output:
+
+gitops-app Synced Healthy
+1️⃣1️⃣ Check Kubernetes Ingress
+kubectl get ingress -n default
+
+This shows the Ingress resource created by your Helm chart.
+
+1️⃣2️⃣ Get Application URL
+kubectl get ingress gitops-app-ingress
+
+Example output:
+
+ADDRESS
+k8s-gitops-123456.ap-south-1.elb.amazonaws.com
+1️⃣3️⃣ Access Application
+
+Open browser:
+
+http://<ALB-DNS>
+
+Expected result:
+
+Hello from GitOps + Terraform!!
+Final Bootstrap Steps (After infra.yaml)
+1 Access Argo CD UI
+2 Get Argo CD admin password
+3 Enable IAM OIDC provider
+4 Download ALB controller IAM policy
+5 Create IAM policy
+6 Create IAM service account
+7 Install AWS Load Balancer Controller
+8 Verify controller
+9 Register Argo CD application
+10 Verify application
+11 Check ingress
+12 Get ALB DNS
+13 Access application
+
