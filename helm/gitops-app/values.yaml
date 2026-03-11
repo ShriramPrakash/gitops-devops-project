@@ -2,7 +2,7 @@ replicaCount: 2
 
 image:
   repository: 171385165310.dkr.ecr.ap-south-1.amazonaws.com/gitops-app
-  tag: latest
+  tag: 4c0091e
   pullPolicy: Always
 
 imagePullSecrets:
