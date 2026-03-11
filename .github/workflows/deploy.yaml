@@ -6,7 +6,6 @@ on:
       - main
     paths:
       - argo/**
-      - helm/**
       - .github/workflows/deploy.yaml
   workflow_dispatch:
 
