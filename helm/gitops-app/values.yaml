@@ -1,7 +1,7 @@
 replicaCount: 2
 
 image:
-  repository: 002369670797.dkr.ecr.ap-south-1.amazonaws.com/gitops-app
+  repository: 002369670798.dkr.ecr.ap-south-1.amazonaws.com/gitops-app
   tag: b946c69
   pullPolicy: Always
 
