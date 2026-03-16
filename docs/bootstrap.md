@@ -372,3 +372,142 @@ We enable OIDC in EKS using the eksctl utils associate-iam-oidc-provider command
 
 ✅ If you'd like, I can also show you the full command used to create the IAM Service Account for the AWS Load Balancer Controller (very common in EKS projects).
 
+n my project i have one ingress and i am able access both using this kubectl port-forward svc/argocd-server -n argocd 8080:443 Then open your browser:
+
+https://localhost:8080
+
+Good observation — what you’re seeing actually involves two different access methods. Let’s separate them clearly.
+
+You said you can access ArgoCD using:
+
+kubectl port-forward svc/argocd-server -n argocd 8080:443
+
+and then open:
+
+https://localhost:8080
+
+That does NOT use your Ingress or ALB at all. It directly tunnels traffic from your laptop to the ArgoCD service.
+
+Let’s break it down.
+
+1️⃣ What kubectl port-forward does
+
+When you run:
+
+kubectl port-forward svc/argocd-server -n argocd 8080:443
+
+Kubernetes creates a temporary tunnel.
+
+Traffic flow becomes:
+
+Browser
+   │
+   ▼
+localhost:8080
+   │
+   ▼
+kubectl port-forward tunnel
+   │
+   ▼
+argocd-server service (port 443)
+   │
+   ▼
+ArgoCD UI pod
+
+So you're bypassing the Ingress completely.
+
+2️⃣ Why this works even without Ingress
+
+The argocd-server service already exists inside the cluster.
+
+Example:
+
+kubectl get svc -n argocd
+
+You will see something like:
+
+argocd-server   ClusterIP   10.x.x.x   443/TCP
+
+ClusterIP means:
+
+Accessible only inside Kubernetes cluster
+
+kubectl port-forward lets your laptop temporarily act like it is inside the cluster network.
+
+3️⃣ Where your Ingress is used
+
+Your Helm template creates Ingress only for your application, not ArgoCD.
+
+Your Ingress routes traffic like this:
+
+Internet
+   │
+   ▼
+ALB
+   │
+   ▼
+Ingress
+   │
+   ▼
+Application Service
+   │
+   ▼
+Application Pods
+
+That is how users access the deployed application.
+
+4️⃣ Why ArgoCD UI uses port-forward in many projects
+
+Many teams do not expose ArgoCD publicly for security reasons.
+
+So they access it using:
+
+kubectl port-forward
+
+instead of creating an ALB or public endpoint.
+
+5️⃣ Your project likely looks like this
+Developer
+   │
+   ▼
+Git Repository
+   │
+   ▼
+ArgoCD
+   │
+   ▼
+EKS Cluster
+   │
+   ├── Application Ingress → ALB → Users
+   │
+   └── ArgoCD Server
+          ↑
+          │
+   kubectl port-forward
+          │
+       Developer browser
+6️⃣ Simple explanation you can give in interviews
+
+You can say:
+
+In our project ArgoCD is not exposed through the load balancer. We access the ArgoCD UI using kubectl port-forward, which creates a secure tunnel from the local machine to the argocd-server service inside the Kubernetes cluster. The application itself is exposed through an Ingress that creates an AWS Application Load Balancer.
+
+7️⃣ Quick way to remember
+kubectl port-forward → temporary local tunnel
+Ingress + ALB → external user traffic
+
+💡 One important follow-up question interviewers often ask after this is:
+
+“If ArgoCD is inside the cluster, how does it deploy applications to Kubernetes?”
+
+The answer involves:
+
+Application CR
+↓
+Application Controller
+↓
+Repo Server
+↓
+kubectl apply
+
+If you want, I can walk you through that full ArgoCD internal flow as well.
