@@ -301,3 +301,74 @@ Final Bootstrap Steps (After infra.yaml)
 12 Get ALB DNS
 13 Access application
 
+
+Command to enable OIDC for EKS
+eksctl utils associate-iam-oidc-provider \
+  --cluster <cluster-name> \
+  --region <region> \
+  --approve
+
+Example:
+
+eksctl utils associate-iam-oidc-provider \
+  --cluster my-eks-cluster \
+  --region us-east-1 \
+  --approve
+2️⃣ What this command does
+
+This command:
+
+1️⃣ Finds the OIDC issuer URL of the Amazon EKS cluster
+
+2️⃣ Creates an OIDC identity provider in IAM
+
+3️⃣ Allows Kubernetes service accounts to assume IAM roles
+
+Result:
+
+IAM OIDC Provider Created
+↓
+Cluster Service Accounts can assume IAM roles
+↓
+IRSA enabled
+3️⃣ Verify OIDC provider
+
+You can check it with:
+
+aws iam list-open-id-connect-providers
+
+You’ll see something like:
+
+arn:aws:iam::123456789012:oidc-provider/
+oidc.eks.us-east-1.amazonaws.com/id/ABCDE12345
+4️⃣ Get OIDC issuer URL of cluster
+aws eks describe-cluster \
+  --name my-eks-cluster \
+  --query "cluster.identity.oidc.issuer" \
+  --output text
+
+Example output:
+
+https://oidc.eks.us-east-1.amazonaws.com/id/ABCDE12345
+5️⃣ What happens after OIDC is enabled
+
+Now you can create:
+
+IAM Role
+↓
+Trust policy with OIDC provider
+↓
+Attach policy
+↓
+Bind role to Kubernetes ServiceAccount
+
+This is how components like the AWS Load Balancer Controller get permissions.
+
+6️⃣ Short interview explanation
+
+You can say:
+
+We enable OIDC in EKS using the eksctl utils associate-iam-oidc-provider command. This creates an IAM OIDC provider that allows Kubernetes service accounts to assume IAM roles using IRSA.
+
+✅ If you'd like, I can also show you the full command used to create the IAM Service Account for the AWS Load Balancer Controller (very common in EKS projects).
+
